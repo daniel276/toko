@@ -1,0 +1,118 @@
+{% extends 'main/base.html' %}
+{% block content %}
+<main>
+    <header class="pb-2 pt-3 mb-4 border-bottom">
+      <a href="/" class="d-flex align-items-center text-dark text-decoration-none">
+        <span class="fs-4">Arsip Titipan - {{ user.username }}-{{ user.role }} </span>
+      </a>
+    </header>
+
+    <div class="col-md-7">
+        <form method="get">
+            <div class="row mb-3">
+              <label for="colFormLabelName" class="col-sm-2 col-form-label">Cari Nota Berdasarkan Nama</label>
+              <div class="col-sm-10">
+                <input type="text" name="search_name" value="{{ search_name | default:'' }}" class="form-control" id="colFormLabelName" placeholder="Nama Pembeli...">
+              </div>
+            </div>
+            <div class="row mb-3">
+              <label for="colFormLabelDate" class="col-sm-2 col-form-label">Cari Nota Berdasarkan Tanggal</label>
+              <div class="col-sm-10">
+                <input type="date" name="search_date" class="form-control" id="colFormLabelDate" value="{{ search_date|date:'Y-m-d'}}">
+              </div>
+            </div>
+            <div class="row mb-3 col-md-4">
+                <button type="submit" class="btn btn-outline-info">Cari...</button>
+            </div>
+        </form>
+
+        {% if search_date != None %}
+            <div>
+            <h2>Hasil Pencarian untuk : {{ nota_date }}</h2>
+                <br>
+            <h4>Ditemukan ada {{ arsip_page.count }}</h4>
+        </div>
+        {% endif %}
+
+
+    </div>
+
+
+
+
+    <div>
+        <table class="table table-hover">
+          <thead>
+            <tr>
+              <th scope="col">#</th>
+              <th scope="col">Nomor Nota/Faktur</th>
+              <th scope="col">Nama Pembeli</th>
+              <th scope="col">Tanggal Nota</th>
+              <th scope="col">Barang Sudah Diambil?</th>
+              <th scope="col">Detail</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for arsip in arsip_page %}
+                <tr>
+                    <td>{{ forloop.counter }}</td>
+                    <td>{{ arsip.nota_receipt_id }}</td>
+                    <td>{{ arsip.nota_cust_name }}</td>
+                    <td>{{ arsip.nota_date }}</td>
+                    <td>{% if arsip.nota_sudah_diambil == 1 %}
+                        <span class="badge rounded-pill text-bg-danger">Sudah Selesai</span>
+                        {% else %}
+                        <span class="badge rounded-pill text-bg-success">Belum Diambil</span>
+                        {% endif %}
+                    </td>
+                    <td><a class="btn btn-primary" href="{% url 'arsip:arsip-detail' arsip.id %}">Lihat</a></td>
+                </tr>
+            {% endfor %}
+          </tbody>
+</table>
+
+    {% if arsip_page %}
+        <div>
+        <nav aria-label="...">
+          <ul class="pagination">
+              {% if arsip_page.has_previous %}
+{#                  <li class="page-item"><a class="page-link" href="?page=1">Pertama</a></li>#}
+                  <li class="page-item">
+                      <a href="?{% if querystring %} {{ querystring }}&{% endif %}page={{ arsip_page.previous_page_number }}" class="page-link">Sebelumnya</a>
+                  </li>
+              {% endif %}
+
+            {% for num in arsip_page.paginator.page_range %}
+                {% if arsip_page.number == num %}
+                    <li class="page-item active">
+                        <a class="page-link" aria-current="page">{{ num }}</a>
+                    </li>
+                {% else %}
+                    <li class="page-item">
+                        <a class="page-link"
+                           href="?{% if querystring %}{{ querystring }}&{% endif %}page={{ num }}">{{ num }}</a>
+                    </li>
+                {% endif %}
+            {% endfor %}
+
+            {% if arsip_page.has_next %}
+                <li class="page-item">
+                    <a class="page-link"
+                       href="?{% if querystring %}{{ querystring }}&{% endif %}page={{ arsip_page.next_page_number }}">Selanjutnya
+                    </a>
+                </li>
+            {% endif %}
+
+
+          </ul>
+        </nav>
+    </div>
+    {% endif %}
+
+    </div>
+
+    <footer class="pt-3 mt-4 text-muted border-top">
+      &copy; 2025
+    </footer>
+</main>
+{% endblock %}

@@ -1,0 +1,27 @@
+{% extends 'main/base.html' %}
+{% block content %}
+<main style="height: 100%; width: 100%">
+    <header class="pb-2 pt-3 mb-4 border-bottom">
+      <a href="/" class="d-flex align-items-center text-dark text-decoration-none">
+        <span class="fs-4">Arsip Titipan - {{ user.username }}{{ user.role }} </span>
+      </a>
+    </header>
+
+    <div>
+        <div class="col-md-5">
+        <img style="height: inherit; width: 100%" class="img-fluid" src="/media/{{ arsip.nota_image_file }}" alt="nota_image">
+
+    </div>
+
+    <div class="col-md-7">
+        <div class="row"><h1>AA</h1></div>
+        <div class="row"><h1>BB</h1></div>
+        <div class="row"><h1>CC</h1></div>
+    </div>
+    </div>
+
+
+</main>
+
+
+{% endblock %}

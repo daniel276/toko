@@ -39,5 +39,5 @@ def logout_view(request):
 @login_required
 @user_passes_test(is_staff)
 def dashboard_view(request):
-    return render(request, 'main/dashboard.html', {'user': request.user })
+    return render(request, 'main/main.html', {'user': request.user })
 

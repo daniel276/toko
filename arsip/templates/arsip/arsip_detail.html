@@ -1,27 +1,230 @@
 {% extends 'main/base.html' %}
+{% load static %}
 {% block content %}
-<main style="height: 100%; width: 100%">
-    <header class="pb-2 pt-3 mb-4 border-bottom">
-      <a href="/" class="d-flex align-items-center text-dark text-decoration-none">
-        <span class="fs-4">Arsip Titipan - {{ user.username }}{{ user.role }} </span>
-      </a>
-    </header>
+<head>
+  <link rel="stylesheet" href="{% static 'css/arsip_detail.css' %}">
+  <!-- Viewer.js CSS (local) -->
+  <link rel="stylesheet" href="{% static 'vendor/viewerjs/viewer.css' %}">
+  <link rel="stylesheet" href="{% static 'css/viewer.css' %}">
+  
+</head>
+<main >
+  <div class="detail-page">
+    {% if messages %}
+    <div class="alert alert-primary" role="alert">
+      <ul class="messages mb-0">
+          {% for message in messages %}
+              <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>
+                  {{ message }}
+              </li>
+          {% endfor %}
+      </ul>
+    </div>
+    {% endif %}
+    
+    <div class="first-row p-0">
+      <div class="col-md-4 left-container">
+        <div class="row">
+          <div class="header">
+              <h2>Nota Titipan <span class="badge rounded-pill text-bg-warning">Warning</span></h2>
+          </div>
+        </div>
 
-    <div>
-        <div class="col-md-5">
-        <img style="height: inherit; width: 100%" class="img-fluid" src="/media/{{ arsip.nota_image_file }}" alt="nota_image">
+        {% if arsip.nota_previous_id %}
+          <div class="row mt-2">
+            <label for="formGroupExampleInput0" class="form-label p-0">Nota Ganti</label>
+            <a href="{% url 'arsip:arsip-detail' arsip.nota_previous_id.pk %}">
+              <button type="button" class="btn btn-primary">Lihat Nota Sebelumnya</button>
+            </a>
+          </div>
+        {% endif %}
+
+        {% if arsip.nota_receipt_id %}
+          <div class="row {% if arsip.nota_previous_id %}mt-4{% endif %}">
+            <label for="formGroupExampleInput2" class="form-label p-0">Nomor Nota Struk</label>
+            <input type="text" class="form-control" id="formGroupExampleInput2" value="{{arsip.nota_receipt_id}}" disabled/>
+          </div>
+        {% endif %}
+
+        <div class="row {% if arsip.nota_receipt_id %}mt-4{% endif %}">
+          <label for="formGroupExampleInput" class="form-label p-0">Nama Pembeli</label>
+          <input type="text" class="form-control" id="formGroupExampleInput" value="{{arsip.nota_cust_name}}" disabled/>
+        </div>
+
+        <div class="row mt-4">
+          <label for="formGroupExampleInput1" class="form-label p-0">Tanggal Nota</label>
+          <input type="text" class="form-control" id="formGroupExampleInput1" value="{{arsip.nota_date}}" disabled/>
+        </div>
+
+        <div class="row mt-4">
+          <div class="form-floating p-0">
+            <textarea class="form-control" id="floatingTextarea" disabled>
+              {{ arsip.nota_notes|default:"Tidak Ada" }}
+            </textarea>
+            <label for="floatingTextarea">Catatan</label>
+          </div>
+        </div>
+
+        <div class="row">
+          <button class="btn btn-danger mt-3" data-bs-toggle="modal" data-bs-target="#modalTarikNota">Tarik Nota</button>
+        </div>
+        <div class="row">
+          <button class="btn btn-primary mt-3" data-bs-toggle="modal" data-bs-target="#modalGantiNota">Ganti Nota</button>
+        </div>
+
 
     </div>
+        
+    <div class="col-md-8 right-container">
+      <!-- Viewer container (inline mode renders inside this) -->
+      <!-- Optional external controls -->
+      
+      <div id="iv-wrapper">
+        <!-- Use .url so it works with your storage -->
+        <img id="nota-img" src="/media/{{ arsip.nota_image_file }}" alt="{{arsip.nota_cust_name}}">
+      </div>
 
-    <div class="col-md-7">
-        <div class="row"><h1>AA</h1></div>
-        <div class="row"><h1>BB</h1></div>
-        <div class="row"><h1>CC</h1></div>
+      <div class="iv-controls">
+        <button type="button" class="btn btn-outline-secondary btn-sm" id="btn-zoom-in">Zoom +</button>
+        <button type="button" class="btn btn-outline-secondary btn-sm" id="btn-zoom-out">Zoom −</button>
+        <button type="button" class="btn btn-outline-secondary btn-sm" id="btn-reset">Reset</button>
+      </div>
+      
     </div>
+  </div>
     </div>
 
+    <div class="row">
+        <h1>Riwayat</h1>
+        <div>
+          <table class="table">
+            <thead>
+              <tr>
+                <th scope="col">#</th>
+                <th scope="col">Aksi</th>
+                <th scope="col">Status Lama</th>
+                <th scope="col">Status Baru</th>
+                <th scope="col">Perubahan</th>
+                <th scope="col">Waktu</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for log in logs %}
+                <tr>
+                  <th scope="row">{{ forloop.counter }}</th>
+                  <td>{{ log.action_formatted }}</td>
+                  <td>{{ log.old_status }}</td>
+                  <td>{{ log.new_status}}</td>
+                  <td>{{ log.note }}</td>
+                  <td>@{{ log.timestamp }}</td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+    </div>
+  </div>
 
 </main>
+{# Modal Tarik Nota #}
+<div class="modal fade" id="modalTarikNota" tabindex="-1" aria-labelledby="modalTarikNotaLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <form method="post" action="{% url 'arsip:request-tarik' arsip.id %}">
+        {% csrf_token %}
+        <div class="modal-header">
+          <h5 class="modal-title" id="modalTarikNotaLabel">Tarik Nota ke Supervisor</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Tutup"></button>
+        </div>
 
+        <div class="modal-body">
+          <div class="mb-3">
+            <label for="picInput" class="form-label">PIC yang mengajukan</label>
+            <input type="text" class="form-control" id="picInput" name="pic" placeholder="Nama PIC..." required>
+            <div class="form-text">Nama penanggung jawab (staff yang mengajukan).</div>
+          </div>
+
+          <div class="alert alert-info mb-0">
+            Mengirimkan request akan mengubah status nota menjadi <strong>requested</strong> dan meneruskan ke supervisor untuk approval.
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn btn-light" data-bs-dismiss="modal">Batal</button>
+          <button type="submit" class="btn btn-primary">Kirim Request</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+{# Modal Ganti Nota #}
+<div class="modal fade" id="modalGantiNota" tabindex="-1" aria-labelledby="modalGantiNotaLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <form method="post" action="{% url 'arsip:request-ganti' arsip.id %}">
+        {% csrf_token %}
+        <div class="modal-header">
+          <h5 class="modal-title" id="modalGantiNotaLabel">Tarik Nota ke Supervisor</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Tutup"></button>
+        </div>
+
+        <div class="modal-body">
+          <div class="mb-3">
+            <label for="picInput" class="form-label">PIC yang mengajukan</label>
+            <input type="text" class="form-control" id="picInput" name="pic" placeholder="Nama PIC..." required>
+            <div class="form-text">Nama penanggung jawab (staff yang mengajukan).</div>
+          </div>
+
+          <div class="mb-3">
+            <label for="custInput" class="form-label">Nama Pembeli/Judul</label>
+            <div class="input-group">
+              <input type="text"
+                     class="form-control"
+                     id="custInput"
+                     name="cust_name"
+                     value="{{ arsip.nota_cust_name }}"
+                     placeholder="Nama Pembeli..."
+                     disabled
+                     required>
+              <div class="input-group-text">
+                <input class="form-check-input mt-0" type="checkbox" value="" id="checkDefault">
+              </div>
+            </div>
+            <div class="form-text">Judul/Nama pembeli di nota yang baru</div>
+          </div>
+
+          <div class="mb-3">
+            <label for="recInput" class="form-label">Nomor Struk/Faktur</label>
+            <input type="text" class="form-control" id="recInput" name="new_receipt_id" placeholder="Nomor Struk" required>
+            <div class="form-text">Masukkan nomor yang tercetak di struk.</div>
+          </div>
+
+          <div class="alert alert-info mb-0">
+            Mengirimkan request akan mengubah status nota menjadi <strong>requested</strong> dan meneruskan ke supervisor untuk approval.
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn btn-light" data-bs-dismiss="modal">Batal</button>
+          <button type="submit" class="btn btn-primary">Kirim Request</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<script>
+  document.addEventListener("DOMContentLoaded", function() {
+    const checkbox = document.getElementById("checkDefault");
+    const input = document.getElementById("custInput");
+
+    checkbox.addEventListener("change", function() {
+      input.disabled = !this.checked;
+    });
+  });
+</script>
+<script src="{% static 'vendor/viewerjs/viewer.min.js' %}"></script>
+<script src="{% static 'js/viewer.js' %}"></script>
 
 {% endblock %}

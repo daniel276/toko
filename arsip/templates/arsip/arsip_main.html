@@ -1,28 +1,34 @@
 {% extends 'main/base.html' %}
+{% load icon %}
 {% block content %}
 <main>
-    <header class="pb-2 pt-3 mb-4 border-bottom">
-      <a href="/" class="d-flex align-items-center text-dark text-decoration-none">
-        <span class="fs-4">Arsip Titipan - {{ user.username }}-{{ user.role }} </span>
+    <header class="pb-2 pt-3 mb-4 border-bottom d-flex ">
+      <a href="{% url 'arsip:arsip-register' %}">
+        <button class="btn btn-success">
+          <p class="mb-0">
+            <span>{% icon "file-plus" class="css-class" height="18" width="18" %}</span>
+            Buat Arsip
+          </p>
+        </button>
       </a>
     </header>
 
-    <div class="col-md-7">
+    <div class="row">
         <form method="get">
             <div class="row mb-3">
-              <label for="colFormLabelName" class="col-sm-2 col-form-label">Cari Nota Berdasarkan Nama</label>
-              <div class="col-sm-10">
+              <label for="colFormLabelName" class="col-sm-3 col-form-label">Cari Nota Berdasarkan Nama</label>
+              <div class="col-sm-4">
                 <input type="text" name="search_name" value="{{ search_name | default:'' }}" class="form-control" id="colFormLabelName" placeholder="Nama Pembeli...">
               </div>
             </div>
             <div class="row mb-3">
-              <label for="colFormLabelDate" class="col-sm-2 col-form-label">Cari Nota Berdasarkan Tanggal</label>
-              <div class="col-sm-10">
+              <label for="colFormLabelDate" class="col-sm-3 col-form-label">Cari Nota Berdasarkan Tanggal</label>
+              <div class="col-sm-4">
                 <input type="date" name="search_date" class="form-control" id="colFormLabelDate" value="{{ search_date|date:'Y-m-d'}}">
               </div>
             </div>
             <div class="row mb-3 col-md-4">
-                <button type="submit" class="btn btn-outline-info">Cari...</button>
+                <button type="submit" class="btn btn-secondary">Cari...</button>
             </div>
         </form>
 
@@ -45,10 +51,10 @@
           <thead>
             <tr>
               <th scope="col">#</th>
-              <th scope="col">Nomor Nota/Faktur</th>
               <th scope="col">Nama Pembeli</th>
               <th scope="col">Tanggal Nota</th>
               <th scope="col">Barang Sudah Diambil?</th>
+              <th scope="col">Status Posting</th>
               <th scope="col">Detail</th>
             </tr>
           </thead>
@@ -56,27 +62,41 @@
             {% for arsip in arsip_page %}
                 <tr>
                     <td>{{ forloop.counter }}</td>
-                    <td>{{ arsip.nota_receipt_id }}</td>
                     <td>{{ arsip.nota_cust_name }}</td>
                     <td>{{ arsip.nota_date }}</td>
                     <td>{% if arsip.nota_sudah_diambil == 1 %}
-                        <span class="badge rounded-pill text-bg-danger">Sudah Selesai</span>
+                        <span class="badge rounded-pill text-bg-danger">Barang Sudah Diambil</span>
                         {% else %}
                         <span class="badge rounded-pill text-bg-success">Belum Diambil</span>
                         {% endif %}
                     </td>
-                    <td><a class="btn btn-primary" href="{% url 'arsip:arsip-detail' arsip.id %}">Lihat</a></td>
+                    <td>
+                      {% if arsip.nota_status == "unposted" %}
+                        <span class="badge text-bg-primary">Belum diposting</span>
+                      {% elif arsip.nota_status == "req_tarik_nota" %}
+                        <span class="badge text-bg-warning">Proses Posting</span>
+                      {% elif arsip.nota_status == "req_ganti_nota" %}
+                        <span class="badge text-bg-warning">Proses Posting</span>
+                      {% elif arsip.nota_status == "req_retur_nota" %}
+                        <span class="badge text-bg-warning">Proses Posting</span>
+                      {% elif arsip.nota_status == "posted" %}
+                        <span class="badge text-bg-warning">Sudah Posting</span>
+                      {% else %}
+                        <span class="badge text-bg-info">N/A</span>
+                      {% endif %}
+                    </td>
+                    <td><a class="btn btn-secondary" href="{% url 'arsip:arsip-detail' arsip.id %}">Lihat</a></td>
                 </tr>
             {% endfor %}
           </tbody>
-</table>
+        </table>
 
     {% if arsip_page %}
         <div>
         <nav aria-label="...">
           <ul class="pagination">
               {% if arsip_page.has_previous %}
-{#                  <li class="page-item"><a class="page-link" href="?page=1">Pertama</a></li>#}
+                {#<li class="page-item"><a class="page-link" href="?page=1">Pertama</a></li>#}
                   <li class="page-item">
                       <a href="?{% if querystring %} {{ querystring }}&{% endif %}page={{ arsip_page.previous_page_number }}" class="page-link">Sebelumnya</a>
                   </li>
@@ -110,9 +130,5 @@
     {% endif %}
 
     </div>
-
-    <footer class="pt-3 mt-4 text-muted border-top">
-      &copy; 2025
-    </footer>
 </main>
 {% endblock %}

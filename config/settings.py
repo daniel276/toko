@@ -34,7 +34,7 @@ AUTH_USER_MODEL = 'accounts.CustomUser'
 INSTALLED_APPS = [
     'main',
     'accounts',
-    'arsip',
+    'arsip.apps.ArsipConfig',
     'django_feather',
     'django.contrib.admin',
     'django.contrib.auth',
@@ -57,6 +57,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'arsip.middleware.CurrentUserMiddleware'
 ]
 
 ROOT_URLCONF = 'config.urls'

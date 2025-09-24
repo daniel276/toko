@@ -1,0 +1,97 @@
+{% extends 'main/base.html' %}
+{% load static %}
+{% block head_extra %}
+     <style>
+      .bd-placeholder-img {
+        font-size: 1.125rem;
+        text-anchor: middle;
+        -webkit-user-select: none;
+        -moz-user-select: none;
+        user-select: none;
+      }
+
+      @media (min-width: 768px) {
+        .bd-placeholder-img-lg {
+          font-size: 3.5rem;
+        }
+      }
+    </style>
+{% endblock %}
+{% block content %}
+    <head>
+      <link rel="stylesheet" href="{% static 'css/main.css' %}">
+    </head>
+    <main>
+    <header class="pb-2 pt-3 mb-4 border-bottom">
+      <a href="/" class="d-flex align-items-center text-dark text-decoration-none">
+        <span class="fs-4">Pending Job - Daftar Nota Titipan </span>
+      </a>
+    </header>
+
+    <div class="pending-card">
+      <table class="table table-hover">
+        <thead>
+          <tr>
+            <th scope="col">#</th>
+            <th scope="col">Nama Pembeli</th>
+            <th scope="col">Tanggal Nota</th>
+            <th scope="col">Barang Sudah Diambil?</th>
+            <th scope="col">Status Posting</th>
+            <th scope="col">Detail</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for arsip in arsip_page %}
+              <tr>
+                  <td>{{ forloop.counter }}</td>
+                  <td>{{ arsip.nota_cust_name }}</td>
+                  <td>{{ arsip.nota_date }}</td>
+                  <td>{% if arsip.nota_sudah_diambil == 1 %}
+                      <span class="badge rounded-pill text-bg-danger">Barang Sudah Diambil</span>
+                      {% else %}
+                      <span class="badge rounded-pill text-bg-success">Belum Diambil</span>
+                      {% endif %}
+                  </td>
+                  <td>
+                    {% if arsip.nota_status == "unposted" %}
+                      <span class="badge text-bg-primary">Belum diposting</span>
+                    {% elif arsip.nota_status == "req_tarik_nota" %}
+                      <span class="badge text-bg-warning">Proses Posting</span>
+                    {% elif arsip.nota_status == "req_ganti_nota" %}
+                      <span class="badge text-bg-warning">Proses Posting</span>
+                    {% elif arsip.nota_status == "req_retur_nota" %}
+                      <span class="badge text-bg-warning">Proses Posting</span>
+                    {% elif arsip.nota_status == "posted" %}
+                      <span class="badge text-bg-warning">Sudah Posting</span>
+                    {% else %}
+                      <span class="badge text-bg-info">N/A</span>
+                    {% endif %}
+                  </td>
+                  <td><a class="btn btn-secondary" href="{% url 'arsip:arsip-detail' arsip.id %}">Lihat</a></td>
+              </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+    
+
+    <div class="row align-items-md-stretch">
+      <div class="col-md-6">
+        <div class="h-100 p-5 text-white bg-dark rounded-3">
+          <h2>Change the background</h2>
+          <p>Swap the background-color utility and add a `.text-*` color utility to mix up the jumbotron look. Then, mix and match with additional component themes and more.</p>
+          <button class="btn btn-outline-light" type="button">Example button</button>
+        </div>
+      </div>
+      <div class="col-md-6">
+        <div class="h-100 p-5 bg-light border rounded-3">
+          <h2>Add borders</h2>
+          <p>Or, keep it light and add a border for some added definition to the boundaries of your content. Be sure to look under the hood at the source HTML here as we've adjusted the alignment and sizing of both column's content for equal-height.</p>
+          <button class="btn btn-outline-secondary" type="button">Example button</button>
+        </div>
+      </div>
+    </div>
+
+</main>
+{% endblock %}

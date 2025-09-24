@@ -3,9 +3,6 @@ from django.shortcuts import render
 
 from accounts.views import is_staff
 
-
-# Create your views here.
-
 @login_required
 @user_passes_test(is_staff)
 def dashboard_view(request):
